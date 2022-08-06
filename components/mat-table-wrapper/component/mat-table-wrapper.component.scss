@@ -153,6 +153,7 @@ cdk-cell {
 }
 
 .cdk-line-clamp {
+    width: 100%;
     display: -webkit-box;
     -webkit-line-clamp: var(--cdk-line-clamp);
     -webkit-box-orient: vertical;
@@ -161,6 +162,7 @@ cdk-cell {
 }
 
 .cdk-truncate {
+    width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

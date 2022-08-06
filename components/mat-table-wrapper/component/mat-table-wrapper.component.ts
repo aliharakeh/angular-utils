@@ -5,17 +5,16 @@ import {
     ContentChildren,
     ElementRef,
     EventEmitter,
-    Input,
+    Input, OnChanges,
     Output,
-    QueryList,
+    QueryList, SimpleChanges,
     ViewChild
 } from '@angular/core';
 import {MatColumnDef, MatTable, MatTableDataSource} from '@angular/material/table';
 import {SelectionModel} from '@angular/cdk/collections';
-import {TableOptions} from '../models/TableOptions';
-import {TableColumn} from '../models/TableColumn';
-import {TableGroupColumn} from '../models/TableGroupColumn';
-
+import {TableColumn} from '../models/column';
+import {RowData} from '../models/row-data';
+import {DisplayedGroupColumns, TableConfig, TableConfiguration} from '../models/table-config';
 
 /*
 * The Idea of this component is to have a simple & extendable wrapper over cdk-table.
@@ -35,7 +34,7 @@ import {TableGroupColumn} from '../models/TableGroupColumn';
     styleUrls: ['./mat-table-wrapper.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MatTableWrapperComponent<T> implements AfterContentInit {
+export class MatTableWrapperComponent<T = any> implements AfterContentInit, OnChanges {
 
     @Input() withSelection: boolean = false;
 
@@ -48,35 +47,40 @@ export class MatTableWrapperComponent<T> implements AfterContentInit {
         selection.forEach(s => this.selection.select(s));
     }
 
+    @Input() getStatusColor: (data) => string = (_) => 'transparent';
+
     @Input('data') set setData(data: any[]) {
-        if (data) {
-            this.data = data;
+        this.data = data || [];
+        if (!this.firstRender) {
             this.buildDataSource();
         }
     }
 
-    @Input('tableOptions') set setTableOptions(tableOptions: TableOptions) {
-        this.tableOptions = new TableOptions(tableOptions);
-        for (const col of tableOptions.columns) {
-            this.displayedColumns.push(col.columnDef);
-            if (col.textColumn) this.textColumns.push(col);
+    @Input('tableConfig') set setTableConfig(tableConfig: TableConfig) {
+        this.tableConfiguration = new TableConfiguration(tableConfig);
+        this.tableConfiguration.columns.forEach(col => {
+            this.displayedColumns.push(col.id);
+            if (!col.custom) this.textColumns.push(col);
+        });
+        this.displayedGroupColumns = this.tableConfiguration.getDisplayedGroupColumns();
+        if (!this.firstRender) {
+            this.buildDataSource();
         }
-        this.groupByColumns = tableOptions.groupColumns.filter(c => c.groupBy);
-        this.buildDataSource();
     }
 
-    @Output() rowClick: EventEmitter<any> = new EventEmitter<any>();
-    @Output('selection') selectionChange: EventEmitter<any> = new EventEmitter<any>();
+    @Output() rowClick: EventEmitter<RowData<T>> = new EventEmitter<RowData<T>>();
+    @Output('selection') selectionChange: EventEmitter<RowData<T>[]> = new EventEmitter<RowData<T>[]>();
 
     @ViewChild(MatTable, { static: true }) table: MatTable<T>; // table
     @ContentChildren(MatColumnDef) columnDefs: QueryList<MatColumnDef>; // custom external table columns
 
+    firstRender = true;
     data = []; // source data
     dataSource = new MatTableDataSource([]); // displayed table data
-    tableOptions: TableOptions = TableOptions.EMPTY; // table options
+    tableConfiguration: TableConfiguration = new TableConfiguration(null); // table options
     textColumns: TableColumn[] = []; // columns that only include text (non-custom columns)
     displayedColumns: string[] = []; // displayed table columns & their order
-    groupByColumns: TableGroupColumn[] = []; // columns responsible for the data grouping
+    displayedGroupColumns: DisplayedGroupColumns[] = []; // displayed table grouping columns & their order
     collapsedGroups = new Set<string>(); // groups that are collapsed
     selection = new SelectionModel<any>(true, []); // selected data
 
@@ -86,15 +90,23 @@ export class MatTableWrapperComponent<T> implements AfterContentInit {
         this.columnDefs.forEach(columnDef => this.table.addColumnDef(columnDef)); // add external columns
     }
 
+    ngOnChanges(changes: SimpleChanges) {
+        if (this.firstRender) {
+            this.firstRender = false;
+            this.buildDataSource();
+        }
+    }
+
     buildDataSource() {
-        this.dataSource.data = this.groupedData();
+        console.log('buildDataSource');
+        this.dataSource.data = this.data.length > 0 ? this.groupedData() : [];
         this.elRef.nativeElement.style.setProperty('--cdk-num-of-cols', this.displayedColumns.length);
     }
 
     groupedData() {
-        if (this.groupByColumns.length === 0) return this.data;
+        if (!this.tableConfiguration.isDataGrouped) return this.data;
         // construct the groups
-        let groups = this.data?.reduce((groups, row) => this._customReducer(groups, row), {});
+        let groups = this.data?.reduce((groups, row) => this.customReducer(groups, row), {});
         // get grouped table rows
         let groupArray: any[] = groups ? Object.values(groups) : [];
         // flatten the data to create one single level array containing the group & data rows
@@ -103,16 +115,17 @@ export class MatTableWrapperComponent<T> implements AfterContentInit {
         return flatList?.filter(row => row.isGroup || !this.collapsedGroups.has(row.__groupName__));
     }
 
-    _customReducer(groups, row) {
-        const groupName = this.getGroupName(row);
+    customReducer(groups, row) {
+        const groupName = this.tableConfiguration.getDefaultGroupKey(row);
         // add a grouping row as a header for each group of data
         if (!groups[groupName]) {
-            groups[groupName] = [this.createGroup(groupName, row)];
+            groups[groupName] = this.initGroup(groupName, row);
         }
-        const rowData = {
-            ...row,
+        const rowData: RowData<T> = {
+            ...this.getMutatedData(row),
+            __rawData__: row,
             __groupName__: groupName,
-            __rowStatusColor__: this.tableOptions.getStatusColor(row)
+            __statusColor__: this.getStatusColor(row)
         };
         // add the data to the group
         groups[groupName].push(rowData);
@@ -121,27 +134,28 @@ export class MatTableWrapperComponent<T> implements AfterContentInit {
         return groups;
     };
 
-    getGroupName(data) {
-        return this.groupByColumns.reduce((acc, c, i) => acc + (i > 0 ? '_' : '') + c.valueFn(data), '');
-    }
-
-    createGroup(groupName, row) {
-        return {
+    initGroup(groupName, row) {
+        return [{
             groupName,
-            data: this.tableOptions.groupColumns.reduce((acc, c) => {
-                return {
-                    ...acc,
-                    [c.name]: row[c.name]
-                };
-            }, {}),
+            data: this.tableConfiguration.getGroupByData(row),
             groupData: [],
             isReduced: this.collapsedGroups.has(groupName),
             isGroup: true
-        };
+        }];
     }
 
-    get groupColumns() {
-        return this.tableOptions.groupColumns.map(c => `__${c.name}__`);
+    getMutatedData(rowData) {
+        const mutatedData = { ...rowData };
+        this.textColumns.forEach(c => {
+            if (c.getValue) {
+                mutatedData[c.id] = c.getValue(rowData);
+            }
+        });
+        return mutatedData;
+    }
+
+    get visibleGroupColumnsIds() {
+        return this.displayedGroupColumns.map(gc => gc.columnId);
     }
 
     isGroup(index, item): boolean {

@@ -1,7 +1,7 @@
 <cdk-table [dataSource]="dataSource">
 
     <!-- Text Columns with or without selection -->
-    <ng-container *ngFor="let col of textColumns; let i = index" [cdkColumnDef]="col.columnDef">
+    <ng-container *ngFor="let col of textColumns; let i = index" [cdkColumnDef]="col.id">
         <cdk-header-cell *cdkHeaderCellDef [style.width]="col.width" [style]="col?.headerStyles">
             <div class="cdk-cell-wrapper">
                 <!-- Master Columns Selection -->
@@ -18,7 +18,7 @@
                 <div
                     class="cdk-line-clamp"
                     [title]="col.label"
-                    [style.text-align]="col.position"
+                    [style.text-align]="col.alignContent"
                 >
                     {{ col.label }}
                 </div>
@@ -38,10 +38,10 @@
                 </div>
                 <!-- Column Value - use pipes (no expressions or function calls as they run on every change detection again) -->
                 <div class="cdk-line-clamp"
-                     [title]="row | action: col.getValue"
-                     [style.text-align]="col.position"
+                     [title]="row[col.id]"
+                     [style.text-align]="col.alignContent"
                 >
-                    {{ row | action: col.getValue }}
+                    {{ row[col.id] }}
                 </div>
             </div>
         </cdk-cell>
@@ -56,22 +56,22 @@
         *cdkRowDef="let row; columns: displayedColumns;"
         (click)="rowAction(row)"
         class="cdk-status"
-        style="--cdk-row-status-color: {{ row.__rowStatusColor__ }};"
+        style="--cdk-row-status-color: {{ row.__statusColor__ }};"
     ></cdk-row>
 
     <!-- Group Rows : will be used instead of the default row definition above when the `when` parameter has a true value -->
     <cdk-row
         mat-row
-        *cdkRowDef="let row; columns: groupColumns; when: isGroup"
+        *cdkRowDef="let row; columns: visibleGroupColumnsIds; when: isGroup"
         class="cdk-group-header"
-        style="--cdk-group-row-spacing: {{ tableOptions.groupSpacing }};"
+        style="--cdk-group-row-spacing: {{ tableConfiguration.groupSpacing }};"
         (click)="toggleGroup(row)"
     ></cdk-row>
 
     <!-- Group header cells -->
     <ng-container
-        *ngFor="let groupCol of tableOptions.groupColumns; let i = index"
-        [cdkColumnDef]="'__' + groupCol.name + '__'"
+        *ngFor="let groupCol of displayedGroupColumns; let i = index"
+        [cdkColumnDef]="groupCol.columnId"
     >
         <cdk-cell [style.width]="groupCol.width" *cdkCellDef="let group">
             <div class="cdk-cell-wrapper">
@@ -82,12 +82,12 @@
                 </div>
 
                 <!-- Data -->
-                <!-- [title]="[group.data, group.groupData] | action: groupCol.labelFn" -->
+                <!-- [title]="groupCol.getLabel | callActionWith: group.groupData" -->
                 <div
-                    [style.text-align]="groupCol.position"
+                    [style.text-align]="groupCol.alignContent"
                     class="cdk-truncate"
                 >
-                    {{ [group.data, group.groupData] | action: groupCol.labelFn }}
+                    {{ groupCol.getLabel | callActionWith: group.groupData  }}
                 </div>
             </div>
         </cdk-cell>
