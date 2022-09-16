@@ -1,0 +1,19 @@
+<cdk-cell>
+    <div class="cdk-cell-wrapper">
+
+        <!-- Expand/Collapse Icon -->
+        <div class="cdk-mr" *ngIf="isFirst">
+            <mat-icon *ngIf="!group.isReduced">expand_less</mat-icon>
+            <mat-icon *ngIf="group.isReduced">expand_more</mat-icon>
+        </div>
+
+        <!-- Data -->
+        <div
+            class="cdk-truncate"
+            [style.text-align]="groupCol.alignContent"
+            [title]="groupCol.getLabel | callActionWith: group.groupData"
+        >
+            {{ groupCol.getLabel | callActionWith: group.groupData }}
+        </div>
+    </div>
+</cdk-cell>

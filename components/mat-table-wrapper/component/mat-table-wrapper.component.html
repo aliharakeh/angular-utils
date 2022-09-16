@@ -1,96 +1,84 @@
-<cdk-table [dataSource]="dataSource">
+<cdk-table [dataSource]="dataSource" matSort (matSortChange)="onSort($event)" *ngIf="ready">
 
-    <!-- Text Columns with or without selection -->
-    <ng-container *ngFor="let col of textColumns; let i = index" [cdkColumnDef]="col.id">
-        <cdk-header-cell *cdkHeaderCellDef [style.width]="col.width" [style]="col?.headerStyles">
-            <div class="cdk-cell-wrapper">
-                <!-- Master Columns Selection -->
-                <div *ngIf="withSelection && i === 0">
-                    <mat-checkbox
-                        (change)="$event ? toggleAllRowsSelection() : null"
-                        [checked]="selection.hasValue() && isAllSelected()"
-                        [indeterminate]="selection.hasValue() && !isAllSelected()"
-                        class="cdk-mx"
-                    >
-                    </mat-checkbox>
-                </div>
-                <!-- Column Label -->
-                <div
-                    class="cdk-line-clamp"
-                    [title]="col.label"
-                    [style.text-align]="col.alignContent"
-                >
-                    {{ col.label }}
-                </div>
+    <!---------------------------------------------------------------------------
+        columns definitions
+     --------------------------------------------------------------------------->
+    <ng-container *ngFor="let col of tableConfiguration.columns; let i = index" [cdkColumnDef]="col.id">
+
+        <!-- header cells definitions -->
+        <column-header
+            *cdkHeaderCellDef
+            [textColumn]="col"
+            [withSelection]="withSelection"
+            [isFirst]="i === 0"
+            [isSorted]="isSorted(col.id)"
+            [areAllSelected]="areAllSelected"
+            [style.width]="col.width || col.autoWidth"
+            (toggleAll)="toggleAll()"
+        ></column-header>
+
+        <!-- column cells definitions -->
+        <column-cell
+            *cdkCellDef="let row"
+            [row]="row"
+            [textColumn]="col"
+            [withSelection]="withSelection"
+            [isFirst]="i === 0"
+            [style.width]="col.width || col.autoWidth"
+        >
+            <!-- text column block -->
+            <div
+                *ngIf="!col.custom; else customColumnBlock"
+                class="cdk-line-clamp"
+                [title]="row[col.id]"
+                [style.text-align]="col.alignContent"
+            >
+                {{ row[col.id] }}
             </div>
-        </cdk-header-cell>
-        <cdk-cell *cdkCellDef="let row" [style.width]="col.width" [style]="col?.cellStyles">
-            <div class="cdk-cell-wrapper">
-                <!-- Column Selection -->
-                <div *ngIf="withSelection && i === 0">
-                    <mat-checkbox
-                        (click)="$event.stopPropagation()"
-                        (change)="toggleRowSelection(row)"
-                        [checked]="selection.isSelected(row)"
-                        class="cdk-mx"
-                    >
-                    </mat-checkbox>
-                </div>
-                <!-- Column Value - use pipes (no expressions or function calls as they run on every change detection again) -->
-                <div class="cdk-line-clamp"
-                     [title]="row[col.id]"
-                     [style.text-align]="col.alignContent"
-                >
-                    {{ row[col.id] }}
-                </div>
-            </div>
-        </cdk-cell>
+
+            <!-- custom column block -->
+            <ng-template #customColumnBlock>
+                <ng-container *ngTemplateOutlet="templates[col.id]; context: { $implicit: row }"></ng-container>
+            </ng-template>
+
+        </column-cell>
+
     </ng-container>
 
-    <!-- External Columns -->
-    <ng-content></ng-content>
-
-    <!-- Default Table Rows -->
+    <!---------------------------------------------------------------------------
+        Default Table Rows
+     --------------------------------------------------------------------------->
     <cdk-header-row *cdkHeaderRowDef="displayedColumns; sticky: true"></cdk-header-row>
     <cdk-row
         *cdkRowDef="let row; columns: displayedColumns;"
         (click)="rowAction(row)"
         class="cdk-status"
-        style="--cdk-row-status-color: {{ row.__statusColor__ }};"
+        style="--cdk-row-status-color: {{ row.STATUS_COLOR }};"
     ></cdk-row>
 
-    <!-- Group Rows : will be used instead of the default row definition above when the `when` parameter has a true value -->
+    <!---------------------------------------------------------------------------
+        Group Rows
+        (will be used instead of the default row definition above when the `when` parameter has a true value)
+     --------------------------------------------------------------------------->
     <cdk-row
-        mat-row
         *cdkRowDef="let row; columns: visibleGroupColumnsIds; when: isGroup"
         class="cdk-group-header"
-        style="--cdk-group-row-spacing: {{ tableConfiguration.groupSpacing }};"
+        mat-row
         (click)="toggleGroup(row)"
     ></cdk-row>
 
-    <!-- Group header cells -->
+    <!-- Group cells -->
     <ng-container
         *ngFor="let groupCol of displayedGroupColumns; let i = index"
         [cdkColumnDef]="groupCol.columnId"
     >
-        <cdk-cell [style.width]="groupCol.width" *cdkCellDef="let group">
-            <div class="cdk-cell-wrapper">
-                <!-- Expand/Collapse Icon -->
-                <div class="cdk-mr" *ngIf="i === 0">
-                    <mat-icon *ngIf="!group.isReduced">expand_less</mat-icon>
-                    <mat-icon *ngIf="group.isReduced">expand_more</mat-icon>
-                </div>
-
-                <!-- Data -->
-                <!-- [title]="groupCol.getLabel | callActionWith: group.groupData" -->
-                <div
-                    [style.text-align]="groupCol.alignContent"
-                    class="cdk-truncate"
-                >
-                    {{ groupCol.getLabel | callActionWith: group.groupData  }}
-                </div>
-            </div>
-        </cdk-cell>
+        <group-column-cell
+            *cdkCellDef="let group"
+            [group]="group"
+            [groupCol]="groupCol"
+            [isFirst]="i === 0"
+            [style.width]="groupCol.width"
+        ></group-column-cell>
     </ng-container>
 
 </cdk-table>

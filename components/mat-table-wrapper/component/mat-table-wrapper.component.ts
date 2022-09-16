@@ -5,153 +5,205 @@ import {
     ContentChildren,
     ElementRef,
     EventEmitter,
-    Input, OnChanges,
+    Input,
+    OnChanges,
+    OnDestroy,
+    OnInit,
     Output,
-    QueryList, SimpleChanges,
+    QueryList,
+    SimpleChanges,
     ViewChild
 } from '@angular/core';
-import {MatColumnDef, MatTable, MatTableDataSource} from '@angular/material/table';
-import {SelectionModel} from '@angular/cdk/collections';
-import {TableColumn} from '../models/column';
-import {RowData} from '../models/row-data';
-import {DisplayedGroupColumns, TableConfig, TableConfiguration} from '../models/table-config';
+import {MatTableWrapperRowData} from '../models/mat-table-wrapper-row-data';
+import {Sort} from '@angular/material/sort';
+import {CdkTable} from '@angular/cdk/table';
+import {SelectionService} from '../providers/selection.service';
+import {takeWhile, tap} from 'rxjs';
+import {map} from 'rxjs/operators';
+import {MatTableWrapperColumnDirective} from '../directives/mat-table-wrapper-column.directive';
+import {MatTableWrapperColumn} from '../models/mat-table-wrapper-column';
+import {MatTableWrapperBase} from './mat-table-wrapper-base';
+import {MatTableWrapperConfigService} from '../providers/mat-table-wrapper-config.service';
+import {MatTableWrapperGroupByColumn} from '../models/mat-table-wrapper-group-by-column';
+import {
+    MatTableWrapperDataGroupColumns,
+    MatTableWrapperGroupByColumns,
+    MatTableWrapperGroupingConfig
+} from '../models/mat-table-wrapper-grouping';
+import {MatTableWrapperDataGroupColumn} from '../models/mat-table-wrapper-data-group-column';
 
-/*
-* The Idea of this component is to have a simple & extendable wrapper over cdk-table.
-* Features:
-*   - group table data by adding a row before each group as a header to the grouped data. This header can be customized
-*     through the GroupColumn class properties in the table options.
-*   - single & multi select of table data.
-*   - column customization through the TableColumn class properties options.
-*   - custom external columns added through `ng-content` to customize any non-text column that needs to be added
-*     to the table.
-* Note: for simplicity, this component doesn't include any complex conditional logic on columns or rows as this can
-* be done through the table configuration from outside the component.
-* */
+/**
+ * The Idea of this component is to have a simple & extendable wrapper over cdk-table.
+ *
+ * ## Features:
+ * - group data
+ * - non-grouped & grouped data sorting
+ * - hide columns
+ * - data selection
+ * - row click action
+ * - column customization options
+ * - custom external column templates
+ * - grouping header customization
+ *
+ *
+ * ## CSS Config
+ *
+ * ### Table
+ * --cdk-table-border: #797575;
+ * --cdk-table-border-radius: 10px 10px 0 0;
+ * --cdk-table-font: 500;
+ *
+ * ### Rows
+ * --cdk-header-row-fw: 600;
+ * --cdk-header-row-bg: #797575;
+ * --cdk-group-row-bg: #797575;
+ * --cdk-group-row-hover-bg: #797575;
+ * --cdk-row-hover-bg: #797575;
+ * --cdk-row-padding: 0; // 0 12px
+ * --cdk-row-status-color: transparent;
+ * --cdk-row-status-width: 4px;
+ * --cdk-row-status-height: 60%;
+ * --cdk-row-status-left: -5px;
+ * --cdk-row-status-top: 20%;
+ * --cdk-row-status-border: 2px 0 0 2px;
+ *
+ * ### Grouping
+ * --cdk-table-group-spacing: 16px;
+ *
+ * ### Cells
+ * --cdk-header-cell-padding: 10px 8px;
+ * --cdk-cell-padding: 12px 8px;
+ *
+ * ### Utils
+ * --cdk-min-cell-width: 6ch;
+ * --cdk-line-clamp: 1;
+ *
+ * **Note**: for simplicity, this component doesn't include any complex conditional logic on columns or rows as this can
+ * be done through the table configuration from outside the component.
+ * */
 @Component({
     selector: 'app-mat-table-wrapper',
     templateUrl: './mat-table-wrapper.component.html',
     styleUrls: ['./mat-table-wrapper.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MatTableWrapperComponent<T = any> implements AfterContentInit, OnChanges {
+export class MatTableWrapperComponent<T> extends MatTableWrapperBase<T>
+    implements OnInit, AfterContentInit, OnChanges, OnDestroy {
 
-    @Input() withSelection: boolean = false;
+    /** add selection capability to the table  */
+    @Input()
+    withSelection: boolean = false;
 
-    @Input('linesPerRow') set setLinesPerRow(linesPerRow: number) {
+    @Input()
+    tableId: string;
+
+    /** specify the maximum allowed lines for each table row text to wrap on before the text is truncated */
+    @Input('linesPerRow')
+    set setLinesPerRow(linesPerRow: number) {
         this.elRef.nativeElement.style.setProperty('--cdk-line-clamp', linesPerRow);
     }
 
-    @Input('defaultSelection') set defaultSelection(selection: any[]) {
-        this.selection.clear();
-        selection.forEach(s => this.selection.select(s));
+    /** specify the default selected data */
+    @Input('defaultSelection')
+    set defaultSelection(selection: MatTableWrapperRowData<T>[]) {
+        this.selection.toggleAll(selection);
     }
 
-    @Input() getStatusColor: (data) => string = (_) => 'transparent';
+    /** specify a custom function to get the table row status color */
+    @Input('getStatusColor')
+    set getStatusColorSetter(getStatusColor : (data: MatTableWrapperRowData<T>) => string) {
+        this.getStatusColor = getStatusColor;
+    };
 
-    @Input('data') set setData(data: any[]) {
-        this.data = data || [];
-        if (!this.firstRender) {
-            this.buildDataSource();
-        }
+    /** specify the table data */
+    @Input('data')
+    set setData(data: T[]) {
+        this.setTableData(data);
     }
 
-    @Input('tableConfig') set setTableConfig(tableConfig: TableConfig) {
-        this.tableConfiguration = new TableConfiguration(tableConfig);
-        this.tableConfiguration.columns.forEach(col => {
-            this.displayedColumns.push(col.id);
-            if (!col.custom) this.textColumns.push(col);
-        });
-        this.displayedGroupColumns = this.tableConfiguration.getDisplayedGroupColumns();
-        if (!this.firstRender) {
-            this.buildDataSource();
-        }
+    /** specify the table columns display & grouping configuration */
+    @Input('columns')
+    set setColumns(columns: MatTableWrapperColumn<T>[]) {
+        this.setTableColumns(columns);
     }
 
-    @Output() rowClick: EventEmitter<RowData<T>> = new EventEmitter<RowData<T>>();
-    @Output('selection') selectionChange: EventEmitter<RowData<T>[]> = new EventEmitter<RowData<T>[]>();
+    /** specify the table columns display & grouping configuration */
+    @Input('groupingColumns')
+    set setGroupingColumns(groupByColumns: MatTableWrapperGroupByColumns<T>) {
+        this.setTableGroupByColumns(groupByColumns);
+    }
 
-    @ViewChild(MatTable, { static: true }) table: MatTable<T>; // table
-    @ContentChildren(MatColumnDef) columnDefs: QueryList<MatColumnDef>; // custom external table columns
+    /** specify the table columns display & grouping configuration */
+    @Input('groupingConfig')
+    set setGroupingConfig(groupingOptions: MatTableWrapperGroupingConfig<T>) {
+        this.setTableGroupingConfig(groupingOptions);
+    }
 
-    firstRender = true;
-    data = []; // source data
-    dataSource = new MatTableDataSource([]); // displayed table data
-    tableConfiguration: TableConfiguration = new TableConfiguration(null); // table options
-    textColumns: TableColumn[] = []; // columns that only include text (non-custom columns)
-    displayedColumns: string[] = []; // displayed table columns & their order
-    displayedGroupColumns: DisplayedGroupColumns[] = []; // displayed table grouping columns & their order
-    collapsedGroups = new Set<string>(); // groups that are collapsed
-    selection = new SelectionModel<any>(true, []); // selected data
+    /** specify the table columns display & grouping configuration */
+    @Input('dataGroupingColumns')
+    set setDataGroupingColumns(dataGroupColumns: MatTableWrapperDataGroupColumns<T>) {
+        this.setTableDataGroupColumns(dataGroupColumns);
+    }
 
-    constructor(private elRef: ElementRef) {}
+    /** specify the table columns to hide */
+    @Input('hiddenColumns')
+    set hiddenColumnsSetter(hiddenColumns: string[]) {
+        this.setHiddenColumns(hiddenColumns);
+    };
+
+    /** an action to call when a row is clicked */
+    @Output()
+    rowClick: EventEmitter<MatTableWrapperRowData<T>> = new EventEmitter<MatTableWrapperRowData<T>>();
+
+    /** an action to call when rows are selected */
+    @Output('selection')
+    selectionChange: EventEmitter<MatTableWrapperRowData<T>[]> = new EventEmitter<MatTableWrapperRowData<T>[]>();
+
+    // table reference
+    @ViewChild(CdkTable, { static: true })
+    table: CdkTable<T>;
+
+    // custom external table columns
+    @ContentChildren(MatTableWrapperColumnDirective)
+    columnDefs: QueryList<MatTableWrapperColumnDirective>;
+
+    constructor(
+        private elementRef: ElementRef,
+        private selectionService: SelectionService<T>,
+        private configService: MatTableWrapperConfigService<T>
+    ) {
+        super(elementRef, selectionService);
+    }
+
+    ngOnInit() {
+        // save component instance
+        this.configService.addTableInstance(this.tableId, this);
+
+        // TODO: will not work with "withSelection" input change.
+        //  see if you can put it in the input set function
+        this.selection.onChange.pipe(
+            takeWhile(_ => this.withSelection && !this.destroyed),
+            map(_ => this.selection.selected),
+            tap((selected: MatTableWrapperRowData<T>[]) => this.selectionChange.emit(selected))
+        ).subscribe();
+    }
 
     ngAfterContentInit() {
-        this.columnDefs.forEach(columnDef => this.table.addColumnDef(columnDef)); // add external columns
+        this.columnDefs.forEach(c => this.templates[c.columnId] = c.templateRef);
     }
 
+    // needed the first time to wait for all inputs to have their values to do some shared actions
     ngOnChanges(changes: SimpleChanges) {
         if (this.firstRender) {
             this.firstRender = false;
+            this.setDisplayedColumns();
             this.buildDataSource();
+            this.ready = true;
         }
     }
 
-    buildDataSource() {
-        console.log('buildDataSource');
-        this.dataSource.data = this.data.length > 0 ? this.groupedData() : [];
-        this.elRef.nativeElement.style.setProperty('--cdk-num-of-cols', this.displayedColumns.length);
-    }
-
-    groupedData() {
-        if (!this.tableConfiguration.isDataGrouped) return this.data;
-        // construct the groups
-        let groups = this.data?.reduce((groups, row) => this.customReducer(groups, row), {});
-        // get grouped table rows
-        let groupArray: any[] = groups ? Object.values(groups) : [];
-        // flatten the data to create one single level array containing the group & data rows
-        let flatList = groupArray?.reduce((a, c) => a.concat(c), []);
-        // we filter the final data by keeping the both the grouping & non-collapsed rows
-        return flatList?.filter(row => row.isGroup || !this.collapsedGroups.has(row.__groupName__));
-    }
-
-    customReducer(groups, row) {
-        const groupName = this.tableConfiguration.getDefaultGroupKey(row);
-        // add a grouping row as a header for each group of data
-        if (!groups[groupName]) {
-            groups[groupName] = this.initGroup(groupName, row);
-        }
-        const rowData: RowData<T> = {
-            ...this.getMutatedData(row),
-            __rawData__: row,
-            __groupName__: groupName,
-            __statusColor__: this.getStatusColor(row)
-        };
-        // add the data to the group
-        groups[groupName].push(rowData);
-        // leave a pointer to all group row data inside the group row
-        groups[groupName][0].groupData.push(rowData);
-        return groups;
-    };
-
-    initGroup(groupName, row) {
-        return [{
-            groupName,
-            data: this.tableConfiguration.getGroupByData(row),
-            groupData: [],
-            isReduced: this.collapsedGroups.has(groupName),
-            isGroup: true
-        }];
-    }
-
-    getMutatedData(rowData) {
-        const mutatedData = { ...rowData };
-        this.textColumns.forEach(c => {
-            if (c.getValue) {
-                mutatedData[c.id] = c.getValue(rowData);
-            }
-        });
-        return mutatedData;
+    ngOnDestroy() {
+        this.destroyed = true;
     }
 
     get visibleGroupColumnsIds() {
@@ -169,37 +221,28 @@ export class MatTableWrapperComponent<T = any> implements AfterContentInit, OnCh
         this.buildDataSource();
     }
 
-    toggleAllRowsSelection() {
-        if (this.isAllSelected()) {
-            this.selection.clear();
-        }
-        else {
-            this.selection.clear();
-            this.data?.forEach(row => this.selection.select(row));
-            this.collapsedGroups.clear();
-            this.buildDataSource();
-        }
-        this.emitSelection();
-    }
-
-    toggleRowSelection(value) {
-        this.selection.toggle(value);
-        this.emitSelection();
-    }
-
-    emitSelection() {
-        if (this.withSelection) {
-            this.selectionChange.emit(this.selection.selected);
-        }
-    }
-
-    isAllSelected() {
-        const numSelected = this.selection.selected.length;
-        const numNonGroupRows = this.data?.length;
-        return numSelected === numNonGroupRows;
-    }
-
     rowAction(data: any) {
         this.rowClick.emit(data);
+    }
+
+    onSort(sort: Sort) {
+        this.sort = sort;
+        this.buildDataSource();
+    }
+
+    isSorted(columnId) {
+        if (this.sort?.active !== columnId) return 0;
+        return this.sort.direction === 'asc' ? 1 : this.sort.direction === 'desc' ? -1 : 0;
+    }
+
+    toggleAll() {
+        this.selection.toggleAll(this.data);
+        this.areAllSelected = this.selection.areAllSelected(this.data);
+
+        // TODO: you can add here to show collapsed groups
+        // if (this.areAllSelected) {
+        //     this.collapsedGroups.clear();
+        //     this.buildDataSource()
+        // }
     }
 }

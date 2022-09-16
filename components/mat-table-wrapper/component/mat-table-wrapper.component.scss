@@ -25,145 +25,160 @@
     --cdk-header-cell-padding: 10px 8px;
     --cdk-cell-padding: 12px 8px;
 
+    /* grouping */
+    --cdk-table-group-spacing: 16px;
+
     /* utils */
     --cdk-min-cell-width: 6ch;
     --cdk-num-of-cols: 1; // set to 1 by default, will be updated through JS later in the code to get the exact number
     --cdk-line-clamp: 1;
 }
 
-/*************************************
-* Layout
-*************************************/
-cdk-table {
-    display: block;
-    min-width: calc(var(--cdk-min-cell-width) * var(--cdk-num-of-cols));
 
-    cdk-header-row,
-    cdk-row {
-        display: flex;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    cdk-header-cell,
-    cdk-cell {
-        display: inline-block;
-        box-sizing: border-box;
-        min-width: var(--cdk-min-cell-width); // a trick to make truncate work with flex
-    }
-}
-
-/*************************************
-* Design
-*************************************/
-cdk-table {
-    width: 100%;
-    font-weight: var(--cdk-table-font);
-    border-radius: var(--cdk-table-border-radius);
-}
-
-/* Table Header Row */
-cdk-header-row {
-    background-color: var(--cdk-header-row-bg);
-    border-radius: var(--cdk-table-border-radius);
-}
-
-/* Table Row */
-cdk-row {
-    cursor: pointer;
-    position: relative;
-    padding: var(--cdk-row-padding);
-
-    &:hover {
-        background-color: var(--cdk-row-hover-bg);
-    }
-
-    &.cdk-status::before {
-        content: '';
-        width: var(--cdk-row-status-width);
-        height: var(--cdk-row-status-height);
-        position: absolute;
-        left: var(--cdk-row-status-left);
-        top: var(--cdk-row-status-top);
-        border-radius: var(--cdk-row-status-border);
-        background-color: var(--cdk-row-status-color);
-    }
-
-    &:not(.cdk-group-header) {
-        border-inline: 1px solid var(--cdk-table-border);
-        border-bottom: 1px solid var(--cdk-table-border);
-
-        cdk-cell:not(:last-of-type) {
-            border-right: 1px solid var(--cdk-table-border);
-        }
-    }
-}
-
-/* Table Header Cell */
-cdk-header-cell {
-    padding: var(--cdk-header-cell-padding);
-}
-
-/* Table Cell */
-cdk-cell {
-    padding: var(--cdk-cell-padding);
-}
-
-/* Group Row */
-.cdk-group-header {
-    background: var(--cdk-group-row-bg);
-    border-radius: var(--cdk-table-border-radius);
-    border: 1px solid var(--cdk-group-row-bg);
-    margin-top: var(--cdk-group-row-spacing);
-
-    &:hover {
-        cursor: pointer;
-        background-color: var(--cdk-group-row-hover-bg);
-    }
-
-    cdk-cell {
-        font-weight: var(--cdk-header-row-fw);
-
-        &:not(:last-of-type) {
-            border-right: 1px solid transparent;
-        }
-    }
-}
-
-/* Mat Checkbox */
 :host::ng-deep {
+
+    /*************************************
+    * Layout
+    *************************************/
+    cdk-table {
+        display: block;
+        min-width: calc(var(--cdk-min-cell-width) * var(--cdk-num-of-cols));
+
+        cdk-header-row,
+        cdk-row {
+            display: flex;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        column-header,
+        column-cell,
+        group-column-cell {
+            display: inline-block;
+            box-sizing: border-box;
+            min-width: var(--cdk-min-cell-width); // needed to make truncate work with flex
+        }
+    }
+
+    /*************************************
+    * Design
+    *************************************/
+    cdk-table {
+        width: 100%;
+        font-weight: var(--cdk-table-font);
+        border-radius: var(--cdk-table-border-radius);
+    }
+
+    /* Table Header Row */
+    cdk-header-row {
+        background-color: var(--cdk-header-row-bg);
+        border-radius: var(--cdk-table-border-radius);
+    }
+
+    /* Table Row */
+    cdk-row {
+        cursor: pointer;
+        position: relative;
+        padding: var(--cdk-row-padding);
+
+        &:hover {
+            background-color: var(--cdk-row-hover-bg);
+        }
+
+        &.cdk-status::before {
+            content: '';
+            width: var(--cdk-row-status-width);
+            height: var(--cdk-row-status-height);
+            position: absolute;
+            left: var(--cdk-row-status-left);
+            top: var(--cdk-row-status-top);
+            border-radius: var(--cdk-row-status-border);
+            background-color: var(--cdk-row-status-color);
+        }
+
+        &:not(.cdk-group-header) {
+            border-inline: 1px solid var(--cdk-table-border);
+            border-bottom: 1px solid var(--cdk-table-border);
+
+            column-cell:not(:last-of-type) {
+                border-right: 1px solid var(--cdk-table-border);
+            }
+        }
+    }
+
+    /* Table Header Cell */
+    column-header {
+        padding: var(--cdk-header-cell-padding);
+    }
+
+    /* Table Cell */
+    column-cell, group-column-cell {
+        padding: var(--cdk-cell-padding);
+    }
+
+    /* Group Row */
+    .cdk-group-header {
+        background: var(--cdk-group-row-bg);
+        border-radius: var(--cdk-table-border-radius);
+        border: 1px solid var(--cdk-group-row-bg);
+        margin-top: var(--cdk-table-group-spacing);
+
+        &:hover {
+            cursor: pointer;
+            background-color: var(--cdk-group-row-hover-bg);
+        }
+
+        group-column-cell {
+            font-weight: var(--cdk-header-row-fw);
+
+            &:not(:last-of-type) {
+                border-right: 1px solid transparent;
+            }
+        }
+    }
+
+    /* Utils */
+    .cdk-cell-wrapper {
+        display: flex;
+        align-items: center;
+        height: 100%;
+    }
+
+    .cdk-mx {
+        margin-inline: 0.5rem;
+    }
+
+    .cdk-mr {
+        margin-right: 0.5rem;
+    }
+
+    .cdk-ml {
+        margin-left: 0.5rem;
+    }
+
+    .cdk-line-clamp {
+        width: 100%;
+        display: -webkit-box;
+        -webkit-line-clamp: var(--cdk-line-clamp);
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-wrap: break-word; // break overflowed unbreakable words to wrap them and apply the line-clamp effect
+    }
+
+    .cdk-truncate {
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Material */
     .mat-checkbox label {
         margin-bottom: 0;
     }
+
+    .mat-sort-header-arrow {
+        display: none;
+    }
 }
 
-/* Utils */
-.cdk-cell-wrapper {
-    display: flex;
-    align-items: center;
-    height: 100%;
-}
-
-.cdk-mx {
-    margin-inline: 0.5rem;
-}
-
-.cdk-mr {
-    margin-right: 0.5rem;
-}
-
-.cdk-line-clamp {
-    width: 100%;
-    display: -webkit-box;
-    -webkit-line-clamp: var(--cdk-line-clamp);
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    word-wrap: break-word; // break overflowed unbreakable words to wrap them and apply the line-clamp effect
-}
-
-.cdk-truncate {
-    width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
