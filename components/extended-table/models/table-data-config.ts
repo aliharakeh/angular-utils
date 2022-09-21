@@ -1,24 +1,15 @@
-import {MatTableWrapperColumn, TableColumn} from './mat-table-wrapper-column';
-import {
-    MatTableWrapperDataGroupColumns,
-    MatTableWrapperGroupByColumns,
-    MatTableWrapperGroupingConfig,
-    TableGrouping
-} from './mat-table-wrapper-grouping';
-import {MatTableWrapperRowData} from './mat-table-wrapper-row-data';
 import {fromColumns} from '../utils/columns-util';
-import {MatTableWrapperDataGroupColumn} from './mat-table-wrapper-data-group-column';
+import {TableColumn} from './implementations';
+import {TableGrouping} from './table-grouping';
+import {
+    DisplayedGroupColumns,
+    ExtendedTableColumn,
+    ExtendedTableDataGroupColumns,
+    ExtendedTableGroupByColumns,
+    ExtendedTableGroupingConfig,
+    ExtendedTableRowData
+} from './interfaces';
 
-export interface DisplayedGroupColumns {
-    /** id of the column */
-    columnId: string;
-    /** a function to get the label of the column header */
-    getLabel: any;
-    /** the space taken by the column */
-    width: string;
-    /** text alignment of the column */
-    alignContent: string;
-}
 
 /** A class that will initialize some table configuration values if they are not provided */
 export class TableDataConfig<T> {
@@ -29,28 +20,28 @@ export class TableDataConfig<T> {
         return this.grouping.groupByColumns.length > 0;
     }
 
-    setColumns(columns: MatTableWrapperColumn<T>[]) {
+    setColumns(columns: ExtendedTableColumn<T>[]) {
         this.columns = fromColumns(columns);
         this.grouping = new TableGrouping(this.columns);
     }
 
-    setTableGroupByColumns(groupByColumns: MatTableWrapperGroupByColumns<T>) {
+    setTableGroupByColumns(groupByColumns: ExtendedTableGroupByColumns<T>) {
         this.grouping.setGroupByColumns(groupByColumns);
     }
 
-    setTableGroupingConfig(groupingOptions: MatTableWrapperGroupingConfig<T>) {
+    setTableGroupingConfig(groupingOptions: ExtendedTableGroupingConfig<T>) {
         this.grouping.setGroupingConfig(groupingOptions);
     }
 
-    setTableDataGroupColumns(dataGroupColumns: MatTableWrapperDataGroupColumns<T>) {
+    setTableDataGroupColumns(dataGroupColumns: ExtendedTableDataGroupColumns<T>) {
         this.grouping.setDataGroupColumns(dataGroupColumns);
     }
 
-    getDefaultGroupKey(data: MatTableWrapperRowData<T>) {
+    getDefaultGroupKey(data: ExtendedTableRowData<T>) {
         return this.grouping.getDefaultGroupKey(data);
     }
 
-    getGroupByData(data: MatTableWrapperRowData<T>) {
+    getGroupByData(data: ExtendedTableRowData<T>) {
         return this.grouping.groupByColumns.reduce((acc, c) => {
             return {
                 ...acc,

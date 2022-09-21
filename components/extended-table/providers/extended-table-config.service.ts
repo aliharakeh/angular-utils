@@ -1,11 +1,11 @@
 import {Injectable} from '@angular/core';
-import {MatTableWrapperComponent} from '../component/mat-table-wrapper.component';
+import {ExtendedTableComponent} from '../component/extended-table.component';
 
 @Injectable()
-export class MatTableWrapperConfigService<T> {
+export class ExtendedTableConfigService<T> {
 
     private instances: {
-        [key: string]: Pick<MatTableWrapperComponent<T>,
+        [key: string]: Pick<ExtendedTableComponent<T>,
             'setTableData' |
             'setHiddenColumns' |
             'setTableGroupByColumns' |
@@ -16,7 +16,7 @@ export class MatTableWrapperConfigService<T> {
 
     constructor() {}
 
-    addTableInstance(id: string, instance: MatTableWrapperComponent<T>) {
+    addTableInstance(id: string, instance: ExtendedTableComponent<T>) {
         this.instances[id] = instance;
         this.latestTableId = id;
     }

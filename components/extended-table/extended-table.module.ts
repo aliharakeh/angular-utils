@@ -1,6 +1,6 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {MatTableWrapperComponent} from './component/mat-table-wrapper.component';
+import {ExtendedTableComponent} from './component/extended-table.component';
 import {CallActionWithPipe} from './pipes/call-action-with.pipe';
 import {CdkTableModule} from '@angular/cdk/table';
 import {MatCheckboxModule} from '@angular/material/checkbox';
@@ -9,19 +9,21 @@ import {MatSortModule} from '@angular/material/sort';
 import {ColumnHeaderComponent} from './component/column-header/column-header.component';
 import {ColumnCellComponent} from './component/column-cell/column-cell.component';
 import {SelectionService} from './providers/selection.service';
-import { MatTableWrapperColumnDirective } from './directives/mat-table-wrapper-column.directive';
+import { ExtendedTableColumnDirective } from './directives/extended-table-column.directive';
 import { GroupColumnCellComponent } from './component/group-column-cell/group-column-cell.component';
-import {MatTableWrapperConfigService} from './providers/mat-table-wrapper-config.service';
+import {ExtendedTableConfigService} from './providers/extended-table-config.service';
+import { CheckboxComponent } from './component/checkbox/checkbox.component';
 
 
 @NgModule({
     declarations: [
-        MatTableWrapperComponent,
+        ExtendedTableComponent,
         CallActionWithPipe,
         ColumnHeaderComponent,
         ColumnCellComponent,
-        MatTableWrapperColumnDirective,
-        GroupColumnCellComponent
+        ExtendedTableColumnDirective,
+        GroupColumnCellComponent,
+        CheckboxComponent
     ],
     imports: [
         CommonModule,
@@ -32,12 +34,12 @@ import {MatTableWrapperConfigService} from './providers/mat-table-wrapper-config
     ],
     providers: [
         SelectionService,
-        MatTableWrapperConfigService
+        ExtendedTableConfigService
     ],
     exports: [
-        MatTableWrapperComponent,
+        ExtendedTableComponent,
         CallActionWithPipe,
-        MatTableWrapperColumnDirective
+        ExtendedTableColumnDirective
     ]
 })
-export class MatTableWrapperModule {}
+export class ExtendedTableModule {}

@@ -1,22 +1,22 @@
-<cdk-header-cell
+<div class="header-cell"
     [mat-sort-header]="textColumn.id"
     [style]="textColumn?.headerStyles"
 >
-    <div class="cdk-cell-wrapper">
+    <div class="cell-wrapper">
         <!-- Master Columns Selection -->
         <div *ngIf="withSelection && isFirst">
             <mat-checkbox
                 (change)="$event ? toggleAll() : null"
                 [checked]="selection.hasValue() && areAllSelected"
                 [indeterminate]="selection.hasValue() && !areAllSelected"
-                class="cdk-mx"
+                class="mx"
             >
             </mat-checkbox>
         </div>
 
         <!-- Column Label -->
         <div
-            class="cdk-line-clamp"
+            class="line-clamp"
             [title]="textColumn.label"
             [style.text-align]="textColumn?.alignContent"
         >
@@ -24,11 +24,11 @@
         </div>
 
         <!-- sort mode -->
-        <div class="cdk-ml">
+        <div class="ml">
             <ng-container [ngSwitch]="isSorted">
                 <mat-icon *ngSwitchCase="1">expand_less</mat-icon>
                 <mat-icon *ngSwitchCase="-1">expand_more</mat-icon>
             </ng-container>
         </div>
     </div>
-</cdk-header-cell>
+</div>

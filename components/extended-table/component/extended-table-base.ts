@@ -1,22 +1,20 @@
-import {MatTableDataSource} from '@angular/material/table';
-import {DisplayedGroupColumns, TableDataConfig} from '../models/data-config';
+import {DisplayedGroupColumns, TableDataConfig} from '../models/table-data-config';
 import {Sort} from '@angular/material/sort';
 import {MatTableWrapperRowData} from '../models/mat-table-wrapper-row-data';
 import {ElementRef} from '@angular/core';
 import {SelectionService} from '../providers/selection.service';
 import {
-    MatTableWrapperDataGroupColumns,
-    MatTableWrapperGroupByColumns,
-    MatTableWrapperGroupingConfig
-} from '../models/mat-table-wrapper-grouping';
+    ExtendedTableDataGroupColumns,
+    ExtendedTableGroupByColumns,
+    ExtendedTableGroupingConfig
+} from '../models/table-grouping';
 import {MatTableWrapperColumn} from '../models/mat-table-wrapper-column';
 import {updateColumnsAutoWidth} from '../utils/columns-util';
-import {MatTableWrapperDataGroupColumn} from '../models/mat-table-wrapper-data-group-column';
 
-export class MatTableWrapperBase<T> {
+export class ExtendedTableBase<T> {
     protected firstRender = true;
     protected data = []; // source data
-    protected dataSource = new MatTableDataSource([]); // displayed table data
+    protected displayedData = []; // displayed table data
     protected tableConfiguration: TableDataConfig<T> = new TableDataConfig(); // table options
     protected displayedColumns: string[] = []; // displayed table columns & their order
     protected hiddenColumns: Set<string> = new Set(); // hidden table columns
@@ -95,7 +93,7 @@ export class MatTableWrapperBase<T> {
     }
 
     protected buildDataSource() {
-        this.dataSource.data = this.data.length > 0 ? this.getData() : [];
+        this.displayedData = this.data.length > 0 ? this.getData() : [];
         this.elRef.nativeElement.style.setProperty('--cdk-num-of-cols', this.displayedColumns.length);
     }
 
@@ -113,7 +111,7 @@ export class MatTableWrapperBase<T> {
         // flatten the data to create one single level array containing the group & data rows
         let flatList = groupArray?.reduce((a, c) => a.concat(c), []);
         // we filter the final data by keeping the both the grouping & non-collapsed rows
-        return flatList?.filter(row => row.isGroup || !this.collapsedGroups.has(row.__groupName__));
+        return flatList?.filter(row => row.isGroup || !this.collapsedGroups.has(row.GROUP_KEY));
     }
 
     private sortedData() {

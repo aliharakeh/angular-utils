@@ -1,5 +1,5 @@
-<cdk-cell [style]="textColumn?.cellStyles">
-    <div class="cdk-cell-wrapper">
+<div class="cell" [style]="textColumn?.cellStyles">
+    <div class="cell-wrapper">
 
         <!-- Column Selection -->
         <div *ngIf="withSelection && isFirst">
@@ -7,7 +7,7 @@
                 (click)="$event.stopPropagation()"
                 (change)="toggle(row)"
                 [checked]="selection.isSelected(row)"
-                class="cdk-mx"
+                class="mx"
             >
             </mat-checkbox>
         </div>
@@ -16,4 +16,4 @@
         <ng-content></ng-content>
 
     </div>
-</cdk-cell>
+</div>

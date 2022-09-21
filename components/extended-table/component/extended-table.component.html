@@ -1,0 +1,159 @@
+<div class="table" matSort (matSortChange)="onSort($event)" *ngIf="ready">
+
+    <!-- Header Row -->
+    <div class="header-row">
+        <column-header
+            *ngFor="let col of tableConfiguration.columns; let i = index"
+            [textColumn]="col"
+            [withSelection]="withSelection"
+            [isFirst]="i === 0"
+            [isSorted]="isSorted(col.id)"
+            [areAllSelected]="areAllSelected"
+            [style.width]="col.width || col.autoWidth"
+            (toggleAll)="toggleAll()"
+        ></column-header>
+    </div>
+
+    <!-- Rows -->
+    <ng-container *ngFor="let data of displayedData">
+
+        <!-- Data Row -->
+        <ng-container *ngIf="!data.isGroup; else groupRow">
+            <div
+                class="data-row"
+                style="--data-row-status-color: {{ data.STATUS_COLOR }}"
+                (click)="rowAction(data)"
+            >
+                <column-cell
+                    *ngFor="let col of tableConfiguration.columns; let i = index"
+                    [row]="data"
+                    [textColumn]="col"
+                    [withSelection]="withSelection"
+                    [isFirst]="i === 0"
+                    [style.width]="col.width || col.autoWidth"
+                >
+                    <!-- text column block -->
+                    <div
+                        *ngIf="!col.custom; else customColumnBlock"
+                        class="line-clamp"
+                        [title]="data[col.id]"
+                        [style.text-align]="col.alignContent"
+                    >
+                        {{ data[col.id] }}
+                    </div>
+
+                    <!-- custom column block -->
+                    <ng-template #customColumnBlock>
+                        <ng-container
+                            *ngTemplateOutlet="templates[col.id]; context: { $implicit: data }"></ng-container>
+                    </ng-template>
+
+                </column-cell>
+            </div>
+        </ng-container>
+
+        <!-- Group Row -->
+        <ng-template #groupRow>
+            <div
+                class="group-row"
+                (click)="toggleGroup(data)"
+            >
+                <group-column-cell
+                    *ngFor="let groupCol of displayedGroupColumns; let i = index"
+                    [group]="data"
+                    [groupCol]="groupCol"
+                    [isFirst]="i === 0"
+                    [style.width]="groupCol.width"
+                ></group-column-cell>
+            </div>
+        </ng-template>
+
+    </ng-container>
+
+</div>
+
+
+<!--<cdk-table [dataSource]="dataSource" matSort (matSortChange)="onSort($event)" *ngIf="ready">-->
+
+<!--    &lt;!&ndash;-&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+<!--        columns definitions-->
+<!--     -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&ndash;&gt;-->
+<!--    <ng-container *ngFor="let col of tableConfiguration.columns; let i = index" [cdkColumnDef]="col.id">-->
+
+<!--        &lt;!&ndash; header cells definitions &ndash;&gt;-->
+<!--        <column-header-->
+<!--            *cdkHeaderCellDef-->
+<!--            [textColumn]="col"-->
+<!--            [withSelection]="withSelection"-->
+<!--            [isFirst]="i === 0"-->
+<!--            [isSorted]="isSorted(col.id)"-->
+<!--            [areAllSelected]="areAllSelected"-->
+<!--            [style.width]="col.width || col.autoWidth"-->
+<!--            (toggleAll)="toggleAll()"-->
+<!--        ></column-header>-->
+
+<!--        &lt;!&ndash; column cells definitions &ndash;&gt;-->
+<!--        <column-cell-->
+<!--            *cdkCellDef="let row"-->
+<!--            [row]="row"-->
+<!--            [textColumn]="col"-->
+<!--            [withSelection]="withSelection"-->
+<!--            [isFirst]="i === 0"-->
+<!--            [style.width]="col.width || col.autoWidth"-->
+<!--        >-->
+<!--            &lt;!&ndash; text column block &ndash;&gt;-->
+<!--            <div-->
+<!--                *ngIf="!col.custom; else customColumnBlock"-->
+<!--                class="cdk-line-clamp"-->
+<!--                [title]="row[col.id]"-->
+<!--                [style.text-align]="col.alignContent"-->
+<!--            >-->
+<!--                {{ row[col.id] }}-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; custom column block &ndash;&gt;-->
+<!--            <ng-template #customColumnBlock>-->
+<!--                <ng-container *ngTemplateOutlet="templates[col.id]; context: { $implicit: row }"></ng-container>-->
+<!--            </ng-template>-->
+
+<!--        </column-cell>-->
+
+<!--    </ng-container>-->
+
+<!--    &lt;!&ndash;-&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+<!--        Default Table Rows-->
+<!--     -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&ndash;&gt;-->
+<!--    <cdk-header-row *cdkHeaderRowDef="displayedColumns; sticky: true"></cdk-header-row>-->
+<!--    <cdk-row-->
+<!--        *cdkRowDef="let row; columns: displayedColumns;"-->
+<!--        (click)="rowAction(row)"-->
+<!--        class="cdk-status"-->
+<!--        style="&#45;&#45;cdk-row-status-color: {{ row.STATUS_COLOR }};"-->
+<!--    ></cdk-row>-->
+
+<!--    &lt;!&ndash;-&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+<!--        Group Rows-->
+<!--        (will be used instead of the default row definition above when the `when` parameter has a true value)-->
+<!--     -&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&ndash;&gt;-->
+<!--    <cdk-row-->
+<!--        *cdkRowDef="let row; columns: visibleGroupColumnsIds; when: isGroup"-->
+<!--        class="cdk-group-header"-->
+<!--        mat-row-->
+<!--        (click)="toggleGroup(row)"-->
+<!--    ></cdk-row>-->
+
+<!--    &lt;!&ndash; Group cells &ndash;&gt;-->
+<!--    <ng-container-->
+<!--        *ngFor="let groupCol of displayedGroupColumns; let i = index"-->
+<!--        [cdkColumnDef]="groupCol.columnId"-->
+<!--    >-->
+<!--        <group-column-cell-->
+<!--            *cdkCellDef="let group"-->
+<!--            [group]="group"-->
+<!--            [groupCol]="groupCol"-->
+<!--            [isFirst]="i === 0"-->
+<!--            [style.width]="groupCol.width"-->
+<!--        ></group-column-cell>-->
+<!--    </ng-container>-->
+
+<!--</cdk-table>-->

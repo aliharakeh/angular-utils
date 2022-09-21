@@ -1,0 +1,184 @@
+/*************************************
+* Theme Properties
+*************************************/
+:host {
+    /* table */
+    --table-border: #797575;
+    --table-border-radius: 10px 10px 0 0;
+    --table-font: 500;
+
+    /* rows */
+    --header-row-fw: 600;
+    --header-row-bg: #797575;
+    --group-row-bg: #797575;
+    --group-row-hover-bg: #797575;
+    --data-row-hover-bg: #797575;
+    --data-row-padding: 0; // 0 12px
+    --data-row-status-color: transparent;
+    --data-row-status-width: 4px;
+    --data-row-status-height: 60%;
+    --data-row-status-left: -5px;
+    --data-row-status-top: 20%;
+    --data-row-status-border: 2px 0 0 2px;
+
+    /* cells */
+    --header-cell-padding: 10px 8px;
+    --cell-padding: 12px 8px;
+
+    /* grouping */
+    --table-group-spacing: 16px;
+
+    /* utils */
+    --min-cell-width: 6ch;
+    --num-of-cols: 1; // set to 1 by default, will be updated through JS later in the code to get the exact number
+    --line-clamp: 1;
+}
+
+
+:host::ng-deep {
+
+    /*************************************
+    * Layout
+    *************************************/
+    .table {
+        display: block;
+        min-width: calc(var(--min-cell-width) * var(--num-of-cols));
+
+        .header-row,
+        .data-row {
+            display: flex;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        column-header,
+        column-cell,
+        group-column-cell {
+            display: inline-block;
+            box-sizing: border-box;
+            min-width: var(--min-cell-width); // needed to make truncate work with flex
+        }
+    }
+
+    /*************************************
+    * Design
+    *************************************/
+    .table {
+        width: 100%;
+        font-weight: var(--table-font);
+        border-radius: var(--table-border-radius);
+    }
+
+    /* Table Header Row */
+    .header-row {
+        background-color: var(--header-row-bg);
+        border-radius: var(--table-border-radius);
+    }
+
+    /* Table Row */
+    .data-row {
+        cursor: pointer;
+        position: relative;
+        padding: var(--data-row-padding);
+
+        &:hover {
+            background-color: var(--data-row-hover-bg);
+        }
+
+        &::before {
+            content: '';
+            width: var(--data-row-status-width);
+            height: var(--data-row-status-height);
+            position: absolute;
+            left: var(--data-row-status-left);
+            top: var(--data-row-status-top);
+            border-radius: var(--data-row-status-border);
+            background-color: var(--data-row-status-color);
+        }
+
+        &:not(.group-row) {
+            border-inline: 1px solid var(--table-border);
+            border-bottom: 1px solid var(--table-border);
+
+            column-cell:not(:last-of-type) {
+                border-right: 1px solid var(--table-border);
+            }
+        }
+    }
+
+    /* Table Header Cell */
+    column-header {
+        padding: var(--header-cell-padding);
+    }
+
+    /* Table Cell */
+    column-cell, group-column-cell {
+        padding: var(--cell-padding);
+    }
+
+    /* Group Row */
+    .group-row {
+        background: var(--group-row-bg);
+        border-radius: var(--table-border-radius);
+        border: 1px solid var(--group-row-bg);
+        margin-top: var(--table-group-spacing);
+
+        &:hover {
+            cursor: pointer;
+            background-color: var(--group-row-hover-bg);
+        }
+
+        group-column-cell {
+            font-weight: var(--header-row-fw);
+
+            &:not(:last-of-type) {
+                border-right: 1px solid transparent;
+            }
+        }
+    }
+
+    /* Utils */
+    .cell-wrapper {
+        display: flex;
+        align-items: center;
+        height: 100%;
+    }
+
+    .mx {
+        margin-inline: 0.5rem;
+    }
+
+    .mr {
+        margin-right: 0.5rem;
+    }
+
+    .ml {
+        margin-left: 0.5rem;
+    }
+
+    .line-clamp {
+        width: 100%;
+        display: -webkit-box;
+        -webkit-line-clamp: var(--line-clamp);
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-wrap: break-word; // break overflowed unbreakable words to wrap them and apply the line-clamp effect
+    }
+
+    .truncate {
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Material */
+    .mat-checkbox label {
+        margin-bottom: 0;
+    }
+
+    .mat-sort-header-arrow {
+        display: none;
+    }
+}
+

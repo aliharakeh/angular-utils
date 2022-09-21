@@ -14,23 +14,21 @@ import {
     SimpleChanges,
     ViewChild
 } from '@angular/core';
-import {MatTableWrapperRowData} from '../models/mat-table-wrapper-row-data';
 import {Sort} from '@angular/material/sort';
 import {CdkTable} from '@angular/cdk/table';
 import {SelectionService} from '../providers/selection.service';
 import {takeWhile, tap} from 'rxjs';
 import {map} from 'rxjs/operators';
-import {MatTableWrapperColumnDirective} from '../directives/mat-table-wrapper-column.directive';
-import {MatTableWrapperColumn} from '../models/mat-table-wrapper-column';
-import {MatTableWrapperBase} from './mat-table-wrapper-base';
-import {MatTableWrapperConfigService} from '../providers/mat-table-wrapper-config.service';
-import {MatTableWrapperGroupByColumn} from '../models/mat-table-wrapper-group-by-column';
+import {ExtendedTableColumnDirective} from '../directives/extended-table-column.directive';
+import {ExtendedTableBase} from './extended-table-base';
+import {ExtendedTableConfigService} from '../providers/extended-table-config.service';
 import {
-    MatTableWrapperDataGroupColumns,
-    MatTableWrapperGroupByColumns,
-    MatTableWrapperGroupingConfig
-} from '../models/mat-table-wrapper-grouping';
-import {MatTableWrapperDataGroupColumn} from '../models/mat-table-wrapper-data-group-column';
+    ExtendedTableColumn,
+    ExtendedTableDataGroupColumns,
+    ExtendedTableGroupByColumns,
+    ExtendedTableGroupingConfig,
+    ExtendedTableRowData
+} from '../models/interfaces';
 
 /**
  * The Idea of this component is to have a simple & extendable wrapper over cdk-table.
@@ -82,12 +80,12 @@ import {MatTableWrapperDataGroupColumn} from '../models/mat-table-wrapper-data-g
  * be done through the table configuration from outside the component.
  * */
 @Component({
-    selector: 'app-mat-table-wrapper',
-    templateUrl: './mat-table-wrapper.component.html',
-    styleUrls: ['./mat-table-wrapper.component.scss'],
+    selector: 'app-extended-table',
+    templateUrl: './extended-table.component.html',
+    styleUrls: ['./extended-table.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MatTableWrapperComponent<T> extends MatTableWrapperBase<T>
+export class ExtendedTableComponent<T> extends ExtendedTableBase<T>
     implements OnInit, AfterContentInit, OnChanges, OnDestroy {
 
     /** add selection capability to the table  */
@@ -105,13 +103,13 @@ export class MatTableWrapperComponent<T> extends MatTableWrapperBase<T>
 
     /** specify the default selected data */
     @Input('defaultSelection')
-    set defaultSelection(selection: MatTableWrapperRowData<T>[]) {
+    set defaultSelection(selection: ExtendedTableRowData<T>[]) {
         this.selection.toggleAll(selection);
     }
 
     /** specify a custom function to get the table row status color */
     @Input('getStatusColor')
-    set getStatusColorSetter(getStatusColor : (data: MatTableWrapperRowData<T>) => string) {
+    set getStatusColorSetter(getStatusColor: (data: ExtendedTableRowData<T>) => string) {
         this.getStatusColor = getStatusColor;
     };
 
@@ -123,25 +121,25 @@ export class MatTableWrapperComponent<T> extends MatTableWrapperBase<T>
 
     /** specify the table columns display & grouping configuration */
     @Input('columns')
-    set setColumns(columns: MatTableWrapperColumn<T>[]) {
+    set setColumns(columns: ExtendedTableColumn<T>[]) {
         this.setTableColumns(columns);
     }
 
     /** specify the table columns display & grouping configuration */
     @Input('groupingColumns')
-    set setGroupingColumns(groupByColumns: MatTableWrapperGroupByColumns<T>) {
+    set setGroupingColumns(groupByColumns: ExtendedTableGroupByColumns<T>) {
         this.setTableGroupByColumns(groupByColumns);
     }
 
     /** specify the table columns display & grouping configuration */
     @Input('groupingConfig')
-    set setGroupingConfig(groupingOptions: MatTableWrapperGroupingConfig<T>) {
+    set setGroupingConfig(groupingOptions: ExtendedTableGroupingConfig<T>) {
         this.setTableGroupingConfig(groupingOptions);
     }
 
     /** specify the table columns display & grouping configuration */
     @Input('dataGroupingColumns')
-    set setDataGroupingColumns(dataGroupColumns: MatTableWrapperDataGroupColumns<T>) {
+    set setDataGroupingColumns(dataGroupColumns: ExtendedTableDataGroupColumns<T>) {
         this.setTableDataGroupColumns(dataGroupColumns);
     }
 
@@ -153,24 +151,24 @@ export class MatTableWrapperComponent<T> extends MatTableWrapperBase<T>
 
     /** an action to call when a row is clicked */
     @Output()
-    rowClick: EventEmitter<MatTableWrapperRowData<T>> = new EventEmitter<MatTableWrapperRowData<T>>();
+    rowClick: EventEmitter<ExtendedTableRowData<T>> = new EventEmitter<ExtendedTableRowData<T>>();
 
     /** an action to call when rows are selected */
     @Output('selection')
-    selectionChange: EventEmitter<MatTableWrapperRowData<T>[]> = new EventEmitter<MatTableWrapperRowData<T>[]>();
+    selectionChange: EventEmitter<ExtendedTableRowData<T>[]> = new EventEmitter<ExtendedTableRowData<T>[]>();
 
     // table reference
     @ViewChild(CdkTable, { static: true })
     table: CdkTable<T>;
 
     // custom external table columns
-    @ContentChildren(MatTableWrapperColumnDirective)
-    columnDefs: QueryList<MatTableWrapperColumnDirective>;
+    @ContentChildren(ExtendedTableColumnDirective)
+    columnDefs: QueryList<ExtendedTableColumnDirective>;
 
     constructor(
         private elementRef: ElementRef,
         private selectionService: SelectionService<T>,
-        private configService: MatTableWrapperConfigService<T>
+        private configService: ExtendedTableConfigService<T>
     ) {
         super(elementRef, selectionService);
     }
@@ -184,7 +182,7 @@ export class MatTableWrapperComponent<T> extends MatTableWrapperBase<T>
         this.selection.onChange.pipe(
             takeWhile(_ => this.withSelection && !this.destroyed),
             map(_ => this.selection.selected),
-            tap((selected: MatTableWrapperRowData<T>[]) => this.selectionChange.emit(selected))
+            tap((selected: ExtendedTableRowData<T>[]) => this.selectionChange.emit(selected))
         ).subscribe();
     }
 
