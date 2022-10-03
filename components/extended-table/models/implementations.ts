@@ -1,46 +1,46 @@
 import {
-    ExtendedTableColumn,
-    ExtendedTableDataGroupColumn,
-    ExtendedTableGroupByColumn,
-    ExtendedTableRowData
+    ETColumn,
+    ETDataGroupColumn,
+    ETGroupByColumn,
+    ETRowData
 } from './interfaces';
 
 /** A class that will initialize some column values if they are not provided */
-export class TableColumn<T> implements ExtendedTableColumn<T> {
+export class TableColumn<T> implements ETColumn<T> {
     id: string;
     label: string = '';
     custom: boolean = false;
-    getValue: (data: ExtendedTableRowData<T>) => string;
+    getValue: (data: ETRowData<T>) => string;
     headerStyles: string;
     cellStyles: string;
     alignContent: 'left' | 'center' | 'right' = 'left';
     width: string;
     autoWidth: string;
 
-    constructor(options: ExtendedTableColumn<T>) {
+    constructor(options: ETColumn<T>) {
         Object.assign(this, options);
     }
 }
 
 /** A class that will initialize some data grouping column values if they are not provided */
-export class TableDataGroupColumn<T> implements ExtendedTableDataGroupColumn<T> {
+export class TableDataGroupColumn<T> implements ETDataGroupColumn<T> {
     columnId: string = '';
-    getLabel: (groupData: ExtendedTableRowData<T>[]) => string;
+    getLabel: (groupData: ETRowData<T>[]) => string;
     colspan: number = 1;
     alignContent: 'left' | 'center' | 'right' = 'left';
     width = null;
 
-    constructor(options: ExtendedTableDataGroupColumn<T>) {
+    constructor(options: ETDataGroupColumn<T>) {
         Object.assign(this, options);
     }
 }
 
 /** A class that will initialize some group-by column values if they are not provided */
-export class TableGroupByColumn<T> implements ExtendedTableGroupByColumn<T> {
+export class TableGroupByColumn<T> implements ETGroupByColumn<T> {
     columnId: string = '';
-    getGroupingKey: (data: ExtendedTableRowData<T>) => string = (data: ExtendedTableRowData<T>) => data[this.columnId];
+    getGroupingKey: (data: ETRowData<T>) => string = (data: ETRowData<T>) => data[this.columnId];
 
-    constructor(options: ExtendedTableGroupByColumn<T>) {
+    constructor(options: ETGroupByColumn<T>) {
         Object.assign(this, options);
     }
 }

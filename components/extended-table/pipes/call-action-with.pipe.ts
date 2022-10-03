@@ -8,7 +8,7 @@ import {Pipe, PipeTransform} from '@angular/core';
     name: 'callActionWith'
 })
 export class CallActionWithPipe implements PipeTransform {
-    transform(action: any, ...args: any[]): unknown {
+    transform(action: any, ...args: any[]): any {
         return action(...args);
     }
 }

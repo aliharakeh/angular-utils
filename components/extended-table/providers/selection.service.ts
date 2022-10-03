@@ -1,43 +1,65 @@
 import {Injectable} from '@angular/core';
-import {SelectionModel} from '@angular/cdk/collections';
-import {MatTableWrapperRowData} from '../models/mat-table-wrapper-row-data';
+import {ETRowData} from '../models/interfaces';
+import {BehaviorSubject} from 'rxjs';
+import {DataService} from './data.service';
 
 @Injectable()
 export class SelectionService<T> {
 
-    selection = new SelectionModel<MatTableWrapperRowData<T>>(true, []);
+    selection = new Set<string>();
+    selectionSubject$: BehaviorSubject<ETRowData<T>[]> = new BehaviorSubject<ETRowData<T>[]>([]);
+    areAllSelected = false;
 
-    constructor() { }
-
-    get selected() {
-        return this.selection.selected;
-    }
+    constructor(private dataService: DataService<T>) { }
 
     get onChange() {
-        return this.selection.changed;
+        return this.selectionSubject$.asObservable();
     }
 
-    toggleAll(data) {
-        if (this.areAllSelected(data)) {
+    get selected() {
+        return this.selectionSubject$.getValue();
+    }
+
+    toggleAll(data: ETRowData<T>[]) {
+        if (!data) data = [];
+        this.areAllSelected = this.checkSelection();
+        if (this.areAllSelected) {
             this.clear();
         }
         else {
-            this.selection.clear();
-            data?.forEach(row => this.selection.select(row));
+            this.selectionSubject$.next(data);
+            this.selection = new Set(data.map(d => d.DATA_HASH));
         }
     }
 
-    toggle(value) {
-        this.selection.toggle(value);
+    toggle(data: ETRowData<T>) {
+        if (this.selection.has(data.DATA_HASH)) {
+            this.selection.delete(data.DATA_HASH);
+            this.selectionSubject$.next(this.selected.filter(d => d.DATA_HASH !== data.DATA_HASH));
+        }
+        else {
+            this.selection.add(data.DATA_HASH);
+            this.selectionSubject$.next(this.selected.concat(data));
+        }
+        this.areAllSelected = this.checkSelection();
+    }
+
+    hasValue() {
+        return this.selection.size > 0;
+    }
+
+    isSelected(data: ETRowData<T>) {
+        return this.selection.has(data.DATA_HASH);
+    }
+
+    checkSelection() {
+        const numSelected = this.selected.length;
+        const numNonGroupRows = this.dataService.data?.length;
+        return this.dataService.data?.length && numSelected === numNonGroupRows;
     }
 
     clear() {
         this.selection.clear();
-    }
-
-    areAllSelected(data) {
-        const numSelected = this.selection.selected.length;
-        const numNonGroupRows = data?.length;
-        return data?.length && numSelected === numNonGroupRows;
+        this.selectionSubject$.next([]);
     }
 }

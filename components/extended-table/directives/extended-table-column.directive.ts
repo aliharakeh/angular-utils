@@ -1,11 +1,11 @@
 import {Directive, Input, TemplateRef} from '@angular/core';
 
 @Directive({
-    selector: '[appExtendedTableColumn]'
+    selector: '[appETColumn]'
 })
-export class ExtendedTableColumnDirective {
+export class ETColumnDirective {
 
-    @Input('appExtendedTableColumn') columnId: string = '';
+    @Input('appETColumn') columnId: string = '';
 
     constructor(public templateRef: TemplateRef<any>) { }
 }

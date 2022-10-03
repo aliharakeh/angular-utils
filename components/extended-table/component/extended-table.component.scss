@@ -3,35 +3,40 @@
 *************************************/
 :host {
     /* table */
-    --table-border: #797575;
-    --table-border-radius: 10px 10px 0 0;
-    --table-font: 500;
+    --et-table-border: #797575;
+    --et-table-border-radius: 10px 10px 0 0;
+    --et-table-font: 500;
 
     /* rows */
-    --header-row-fw: 600;
-    --header-row-bg: #797575;
-    --group-row-bg: #797575;
-    --group-row-hover-bg: #797575;
-    --data-row-hover-bg: #797575;
-    --data-row-padding: 0; // 0 12px
-    --data-row-status-color: transparent;
-    --data-row-status-width: 4px;
-    --data-row-status-height: 60%;
-    --data-row-status-left: -5px;
-    --data-row-status-top: 20%;
-    --data-row-status-border: 2px 0 0 2px;
+    --et-header-row-fw: 600;
+    --et-header-row-bg: #797575;
+    --et-group-row-bg: #797575;
+    --et-group-row-hover-bg: #797575;
+    --et-data-row-hover-bg: #797575;
+    --et-data-row-padding: 0; // 0 12px
+    --et-data-row-status-color: transparent;
+    --et-data-row-status-width: 4px;
+    --et-data-row-status-height: 60%;
+    --et-data-row-status-left: -5px;
+    --et-data-row-status-top: 20%;
+    --et-data-row-status-border: 2px 0 0 2px;
 
     /* cells */
-    --header-cell-padding: 10px 8px;
-    --cell-padding: 12px 8px;
+    --et-header-cell-padding: 12px;
+    --et-cell-padding: 12px;
 
     /* grouping */
-    --table-group-spacing: 16px;
+    --et-table-group-spacing: 16px;
+
+    /* checkbox */
+    --et-table-checkbox-bg: red;
+    --et-table-checkbox-boder: black;
+    --et-table-checkbox-color: white;
 
     /* utils */
-    --min-cell-width: 6ch;
-    --num-of-cols: 1; // set to 1 by default, will be updated through JS later in the code to get the exact number
-    --line-clamp: 1;
+    --et-min-cell-width: 6ch;
+    --et-num-of-cols: 1; // set to 1 by default, will be updated through JS later in the code to get the exact number
+    --et-line-clamp: 1;
 }
 
 
@@ -40,96 +45,104 @@
     /*************************************
     * Layout
     *************************************/
-    .table {
+    .et-table {
         display: block;
-        min-width: calc(var(--min-cell-width) * var(--num-of-cols));
+        min-width: calc(var(--et-min-cell-width) * var(--et-num-of-cols));
 
-        .header-row,
-        .data-row {
+        .et-header-row, .et-data-row {
             display: flex;
             width: 100%;
             box-sizing: border-box;
         }
 
-        column-header,
-        column-cell,
-        group-column-cell {
+        column-header, column-cell, group-column-cell {
             display: inline-block;
             box-sizing: border-box;
-            min-width: var(--min-cell-width); // needed to make truncate work with flex
+            min-width: var(--et-min-cell-width); // needed to make truncate work with flex
+        }
+
+        .et-header-cell, .et-cell {
+            width: 100%;
+            height: 100%;
+        }
+
+        .et-cell-wrapper {
+            display: flex;
+            align-items: center;
+            height: 100%;
         }
     }
 
     /*************************************
     * Design
     *************************************/
-    .table {
+    .et-table {
         width: 100%;
-        font-weight: var(--table-font);
-        border-radius: var(--table-border-radius);
+        font-weight: var(--et-table-font);
+        border-radius: var(--et-table-border-radius);
     }
 
     /* Table Header Row */
-    .header-row {
-        background-color: var(--header-row-bg);
-        border-radius: var(--table-border-radius);
+    .et-header-row {
+        background-color: var(--et-header-row-bg);
+        border-radius: var(--et-table-border-radius);
     }
 
     /* Table Row */
-    .data-row {
+    .et-data-row {
         cursor: pointer;
         position: relative;
-        padding: var(--data-row-padding);
+        padding: var(--et-data-row-padding);
 
         &:hover {
-            background-color: var(--data-row-hover-bg);
+            background-color: var(--et-data-row-hover-bg);
         }
 
         &::before {
             content: '';
-            width: var(--data-row-status-width);
-            height: var(--data-row-status-height);
+            width: var(--et-data-row-status-width);
+            height: var(--et-data-row-status-height);
             position: absolute;
-            left: var(--data-row-status-left);
-            top: var(--data-row-status-top);
-            border-radius: var(--data-row-status-border);
-            background-color: var(--data-row-status-color);
+            left: var(--et-data-row-status-left);
+            top: var(--et-data-row-status-top);
+            border-radius: var(--et-data-row-status-border);
+            background-color: var(--et-data-row-status-color);
         }
 
-        &:not(.group-row) {
-            border-inline: 1px solid var(--table-border);
-            border-bottom: 1px solid var(--table-border);
+        &:not(.et-group-row) {
+            border-inline: 1px solid var(--et-table-border);
+            border-bottom: 1px solid var(--et-table-border);
 
             column-cell:not(:last-of-type) {
-                border-right: 1px solid var(--table-border);
+                border-right: 1px solid var(--et-table-border);
             }
         }
     }
 
     /* Table Header Cell */
     column-header {
-        padding: var(--header-cell-padding);
+        padding: var(--et-header-cell-padding);
     }
 
     /* Table Cell */
     column-cell, group-column-cell {
-        padding: var(--cell-padding);
+        padding: var(--et-cell-padding);
     }
 
     /* Group Row */
-    .group-row {
-        background: var(--group-row-bg);
-        border-radius: var(--table-border-radius);
-        border: 1px solid var(--group-row-bg);
-        margin-top: var(--table-group-spacing);
+    .et-group-row {
+        background: var(--et-group-row-bg);
+        border-radius: var(--et-table-border-radius);
+        border: 1px solid var(--et-group-row-bg);
+        margin-top: var(--et-table-group-spacing);
 
         &:hover {
             cursor: pointer;
-            background-color: var(--group-row-hover-bg);
+            background-color: var(--et-group-row-hover-bg);
         }
 
         group-column-cell {
-            font-weight: var(--header-row-fw);
+            font-weight: var(--et-header-row-fw);
 
             &:not(:last-of-type) {
                 border-right: 1px solid transparent;
@@ -137,48 +150,76 @@
         }
     }
 
-    /* Utils */
-    .cell-wrapper {
+    .et-checkbox {
+        border: 2px solid var(--et-table-checkbox-boder);
+        border-radius: 6px;
+        width: 22px;
+        height: 20px;
+        background-color: var(--et-table-checkbox-bg);
         display: flex;
+        justify-content: center;
         align-items: center;
-        height: 100%;
+        cursor: pointer;
+
+        &::before {
+            content: '';
+            color: var(--et-table-checkbox-color);
+            font-weight: bold;
+        }
+
+        &.et-checked::before {
+            content: '\2713';
+        }
+
+        &.et-indeterminate::before {
+            content: '\2212';
+        }
     }
 
-    .mx {
+    .et-arrow::before {
+        content: '\276E';
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .et-arrow-up::before {
+        rotate: 90deg;
+    }
+
+    .et-arrow-down::before {
+        rotate: 270deg;
+    }
+
+    /* Utils */
+    et-.mx {
         margin-inline: 0.5rem;
     }
 
-    .mr {
+    .et-mr {
         margin-right: 0.5rem;
     }
 
-    .ml {
+    .et-ml {
         margin-left: 0.5rem;
     }
 
-    .line-clamp {
+    .et-line-clamp {
         width: 100%;
         display: -webkit-box;
-        -webkit-line-clamp: var(--line-clamp);
+        -webkit-line-clamp: var(--et-line-clamp);
         -webkit-box-orient: vertical;
         overflow: hidden;
         word-wrap: break-word; // break overflowed unbreakable words to wrap them and apply the line-clamp effect
     }
 
-    .truncate {
+    .et-truncate {
         width: 100%;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-    }
-
-    /* Material */
-    .mat-checkbox label {
-        margin-bottom: 0;
-    }
-
-    .mat-sort-header-arrow {
-        display: none;
     }
 }
 

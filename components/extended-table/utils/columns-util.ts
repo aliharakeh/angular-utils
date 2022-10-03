@@ -1,7 +1,8 @@
-import {MatTableWrapperColumn, TableColumn} from '../models/mat-table-wrapper-column';
-
 /** initialize a group of table columns and fill any missing column's width */
-function fromColumns(columns: MatTableWrapperColumn<any>[]) {
+import {ETColumn} from '../models/interfaces';
+import {TableColumn} from '../models/implementations';
+
+function fromColumns(columns: ETColumn<any>[]) {
     const _columns = columns.map(c => new TableColumn(c));
     updateColumnsAutoWidth(_columns);
     return _columns;
@@ -18,14 +19,16 @@ function mergeColumnsWidths(columns: TableColumn<any>[], start, colspan) {
 
 /** allocates the free columns space left to the columns with missing widths */
 function updateColumnsAutoWidth(columns: TableColumn<any>[]) {
-    const { totalWidthTaken, columnsWithoutWidth } = _getWidthUsageInfo(columns);
+    const updatedColumns = [...columns];
+    const { totalWidthTaken, columnsWithoutWidth } = _getWidthUsageInfo(updatedColumns);
     const availableTableWidth = 100 - totalWidthTaken;
     const autoColumnWidth = (availableTableWidth / columnsWithoutWidth) + '%';
-    columns.forEach(c => {
+    updatedColumns.forEach(c => {
         if (!c.width) {
             c.autoWidth = autoColumnWidth;
         }
     });
+    return updatedColumns;
 }
 
 /** provides info about the used table space */

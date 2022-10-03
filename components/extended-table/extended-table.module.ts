@@ -2,17 +2,13 @@ import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ExtendedTableComponent} from './component/extended-table.component';
 import {CallActionWithPipe} from './pipes/call-action-with.pipe';
-import {CdkTableModule} from '@angular/cdk/table';
-import {MatCheckboxModule} from '@angular/material/checkbox';
-import {MatIconModule} from '@angular/material/icon';
-import {MatSortModule} from '@angular/material/sort';
-import {ColumnHeaderComponent} from './component/column-header/column-header.component';
-import {ColumnCellComponent} from './component/column-cell/column-cell.component';
+import {ColumnHeaderComponent} from './component/sub-components/column-header.component';
+import {ColumnCellComponent} from './component/sub-components/column-cell.component';
 import {SelectionService} from './providers/selection.service';
-import { ExtendedTableColumnDirective } from './directives/extended-table-column.directive';
-import { GroupColumnCellComponent } from './component/group-column-cell/group-column-cell.component';
-import {ExtendedTableConfigService} from './providers/extended-table-config.service';
-import { CheckboxComponent } from './component/checkbox/checkbox.component';
+import {ETColumnDirective} from './directives/extended-table-column.directive';
+import {GroupColumnCellComponent} from './component/sub-components/group-column-cell.component';
+import {ETConfigService} from './providers/extended-table-config.service';
+import {CheckboxComponent} from './component/sub-components/checkbox.component';
 
 
 @NgModule({
@@ -21,25 +17,16 @@ import { CheckboxComponent } from './component/checkbox/checkbox.component';
         CallActionWithPipe,
         ColumnHeaderComponent,
         ColumnCellComponent,
-        ExtendedTableColumnDirective,
+        ETColumnDirective,
         GroupColumnCellComponent,
         CheckboxComponent
     ],
-    imports: [
-        CommonModule,
-        CdkTableModule,
-        MatCheckboxModule,
-        MatIconModule,
-        MatSortModule
-    ],
-    providers: [
-        SelectionService,
-        ExtendedTableConfigService
-    ],
+    imports: [CommonModule],
+    providers: [ETConfigService],
     exports: [
         ExtendedTableComponent,
         CallActionWithPipe,
-        ExtendedTableColumnDirective
+        ETColumnDirective,
     ]
 })
 export class ExtendedTableModule {}
