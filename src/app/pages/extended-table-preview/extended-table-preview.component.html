@@ -1,0 +1,25 @@
+<div class="p-8">
+    <div style="margin-bottom: 10px">
+        <button (click)="hiddenColumns = ['country']"> remove country column </button>
+        &nbsp;&nbsp;
+        <button (click)="hiddenColumns = []"> reset columns </button>
+    </div>
+    <app-extended-table
+        class="table1"
+        tableId="table1"
+        [data]="data"
+        [columns]="columns"
+        [groupByColumns]="groupByColumns"
+        [groupingConfig]="groupingConfig"
+        [dataGroupingColumns]="dataGroupColumns"
+        [withSelection]="withSelection"
+        [linesPerRow]="linesPerRow"
+        [getStatusColor]="getStatusColor"
+        [hiddenColumns]="hiddenColumns"
+        (rowClick)="action($event)"
+    >
+        <ng-template appETColumn="test" let-data>
+            test
+        </ng-template>
+    </app-extended-table>
+</div>
