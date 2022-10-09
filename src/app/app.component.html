@@ -1,0 +1,6 @@
+<div class="flex gap-x-3">
+    <button *ngFor="let link of links"
+         [routerLink]="link.route"
+    >{{ link.title }}</button>
+</div>
+<router-outlet></router-outlet>
