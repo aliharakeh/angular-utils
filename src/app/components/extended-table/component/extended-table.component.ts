@@ -201,6 +201,7 @@ export class ExtendedTableComponent<T> implements OnInit, AfterContentInit, OnCh
 	ngOnChanges(changes: SimpleChanges) {
 		if (this.firstRender) {
 			this.firstRender = false;
+			this.sortingService.sortTable();
 			this.groupingService.updateDisplayedGroupColumns();
 			this.buildDataSource();
 			this.ready = true;

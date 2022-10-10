@@ -7,6 +7,7 @@ export class TableColumn<T> implements ETColumn<T> {
 	custom: boolean = false;
 	getValue!: (data: T) => any;
 	sortBy!: (a: ETRowData<T>, b: ETRowData<T>) => number;
+	sort = false;
 	headerStyles: string = '';
 	cellStyles: string = '';
 	alignContent: 'left' | 'center' | 'right' = 'left';

@@ -25,12 +25,16 @@ export class ExtendedTablePreviewComponent {
 	columns: ETColumn<TableData>[] = [
 		{
 			id: 'name',
-			width: '50%',
-			label: 'Name'
+			label: 'Name',
+			sortBy: (a, b) => {
+				const lastNameA = a.name.split(' ')[1];
+				const lastNameB = b.name.split(' ')[1];
+				return lastNameA.localeCompare(lastNameB);
+			},
+			sort: true
 		},
 		{
 			id: 'email',
-			width: '5%',
 			label: 'Email'
 		},
 		{
@@ -51,13 +55,20 @@ export class ExtendedTablePreviewComponent {
 			custom: true
 		}
 	];
-	groupByColumns: ETGroupByColumns<TableData> = ['country'];
+	groupByColumns: ETGroupByColumns<TableData> = [
+		{
+			columnId: 'email',
+			getGroupingKey: data => {
+				return data.email.split('@')[1].replace(/\..*/i, '');
+			}
+		}
+	];
 	groupingConfig: ETGroupingConfig<TableData> = {
 		groupColspan: 3,
-		alignGroupContent: 'center',
+		alignGroupContent: 'left',
 		getGroupLabel: groupData => {
 			const sortedDates = groupData.map(d => new Date(d.date)).sort((a, b) => a.getTime() - b.getTime());
-			return groupData[0].country + ` (${sortedDates[0].toLocaleDateString()} - ${sortedDates[sortedDates.length - 1].toLocaleDateString()})`;
+			return groupData[0].email + ` (${sortedDates[0].toLocaleDateString()} - ${sortedDates[sortedDates.length - 1].toLocaleDateString()})`;
 		}
 	};
 	dataGroupColumns: ETDataGroupColumns<TableData> = [

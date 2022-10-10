@@ -9,6 +9,8 @@ export interface ETColumn<T> {
 	getValue?: (data: T) => string;
 	/** a function to use when sorting the column values */
 	sortBy?: (a: ETRowData<T>, b: ETRowData<T>) => number;
+	/** whether the column should be sorted by default (applies to the first sorted column only) */
+	sort?: boolean;
 	/** styles for the columns header */
 	headerStyles?: string;
 	/** styles for the column cell */
