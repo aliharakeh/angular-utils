@@ -227,7 +227,7 @@ export class ExtendedTableComponent<T> implements OnInit, AfterContentInit, OnCh
 		this.rowClick.emit(data);
 	}
 
-	onSort(sort: ETSort) {
+	onSort(sort: ETSort<T>) {
 		this.sortingService.sort = sort;
 		this.buildDataSource();
 	}

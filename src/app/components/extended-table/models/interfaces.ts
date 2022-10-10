@@ -6,7 +6,9 @@ export interface ETColumn<T> {
 	/** whether the column template is provided through &lt;ng-content&gt; */
 	custom?: boolean;
 	/** a function to mutate the used column value */
-	getValue?: (data: ETRowData<T>) => string;
+	getValue?: (data: T) => string;
+	/** a function to use when sorting the column values */
+	sortBy?: (a: ETRowData<T>, b: ETRowData<T>) => number;
 	/** styles for the columns header */
 	headerStyles?: string;
 	/** styles for the column cell */
@@ -65,22 +67,21 @@ export interface GroupRowData<T> {
 	isGroup: boolean;
 }
 
+/** the type of the displayed table column data */
 export interface DisplayedGroupColumns {
-	/** id of the column */
 	columnId: string;
-	/** a function to get the label of the column header */
 	getLabel: any;
-	/** the space taken by the column */
 	width: string;
-	/** text alignment of the column */
 	alignContent: string;
 }
 
-export interface ETSort {
-	/** The id of the column being sorted. */
+export interface ETSort<T> {
+	/** The id of the column being sorted */
 	active: string;
-	/** The sort direction. */
+	/** The sort direction */
 	direction: number;
+	/** The sort function */
+	sortBy: (a: ETRowData<T>, b: ETRowData<T>) => number;
 }
 
 export interface GroupedData<T> {

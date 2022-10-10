@@ -4,7 +4,7 @@ import {ETRowData, ETSort} from '../models/interfaces';
 @Injectable()
 export class SortingService<T> {
 
-	sort: ETSort | null = null;
+	sort: ETSort<T> | null = null;
 
 	constructor() { }
 
@@ -19,7 +19,11 @@ export class SortingService<T> {
 	sortData(data: ETRowData<T>[]) {
 		const { active, direction } = this.sort || {};
 		if (!active || !direction) return data;
-		// @ts-ignore
-		return data.sort((a, b) => a[active].localeCompare(b[active]) * direction);
+		const sortBy = !!this.sort?.sortBy ? this.sort.sortBy : this.defaultSort(active, direction);
+		return data.sort(sortBy);
+	}
+
+	private defaultSort(active: string, direction: number) {
+		return (a: any, b: any) => JSON.stringify(a[active]).localeCompare(JSON.stringify(b[active])) * direction;
 	}
 }

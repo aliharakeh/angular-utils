@@ -35,7 +35,7 @@ import {CheckboxComponent} from './checkbox.component';
                 </ng-container>
             </div>
         </div>
-    `,
+	`,
 	standalone: true,
 	imports: [CommonModule, CheckboxComponent]
 })
@@ -46,7 +46,7 @@ export class ColumnHeaderComponent<T> {
 	@Input() isFirst: boolean = false;
 
 	@Output('toggleAll') toggleAllEvent: EventEmitter<boolean> = new EventEmitter<boolean>();
-	@Output('sort') sortEvent: EventEmitter<ETSort> = new EventEmitter<ETSort>();
+	@Output('sort') sortEvent: EventEmitter<ETSort<T>> = new EventEmitter<ETSort<T>>();
 
 	constructor(public selectionService: SelectionService<T>) {}
 
@@ -72,7 +72,8 @@ export class ColumnHeaderComponent<T> {
 		}
 		this.sortEvent.emit({
 			active: this.textColumn.id,
-			direction: sortDirection
+			direction: sortDirection,
+			sortBy: this.textColumn.sortBy
 		});
 	}
 
